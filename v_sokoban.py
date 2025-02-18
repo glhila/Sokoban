@@ -94,8 +94,6 @@ def convert_xsb_to_smv(xsb_content):
                             f"    Down_push_valid[{i}][{j}] := (board[{i}][{j}] = \"wk\"|board[{i}][{j}] = \"wk_on_goal\") & board[{i + 1}][{j}] = "
                             f"\"box\" & (board[{i + 2}][{j}] = \"floor\" | board[{i + 2}][{j}] = \"goal\");\n")
 
-
-
     # Define the winning condition
     target_conditions = [f"board[{i}][{j}] = \"box_on_goal\"" for i, row in enumerate(rows) for j, char in
                          enumerate(row) if char in '.+*']
@@ -124,7 +122,12 @@ def convert_xsb_to_smv(xsb_content):
                         # Move left (without pushing a box)
                         smv_content += f"        Left_valid[{i}][{j}] & next(shift_move) = \"l\" : "
                         smv_content += f"case board[{i}][{j}] = \"wk_on_goal\" : \"goal\"; TRUE : \"floor\"; esac;\n"
+                        if rows[i][j - 2] != '#':
+                            # Push left (with a box)
+                            smv_content += f"        Left_push_valid[{i}][{j}]  & next(shift_push) = \"L\":"
+                            smv_content += f"case board[{i}][{j}] = \"wk_on_goal\" : \"goal\"; TRUE : \"floor\"; esac;\n"
                     if j < width - 2 and rows[i][j + 1] != '#':
+                        # Move left (without pushing a box)
                         smv_content += f"        Left_valid[{i}][{j + 1}] & next(shift_move) = \"l\" : "
                         smv_content += f"case board[{i}][{j}] = \"goal\" : \"wk_on_goal\"; TRUE : \"wk\"; esac;\n"
                         if j < width - 3 and rows[i][j + 2] != '#':
@@ -137,7 +140,12 @@ def convert_xsb_to_smv(xsb_content):
                         # Move up (without pushing a box)
                         smv_content += f"        Up_valid[{i}][{j}] & next(shift_move) = \"u\" : "
                         smv_content += f"case board[{i}][{j}] = \"wk_on_goal\" : \"goal\"; TRUE : \"floor\"; esac;\n"
+                        if rows[i - 2][j] != '#':
+                            # Push up (with a box)
+                            smv_content += f"        Up_push_valid[{i}][{j}] & next(shift_push) = \"U\" : "
+                            smv_content += f"case board[{i}][{j}] = \"wk_on_goal\" : \"goal\"; TRUE : \"floor\"; esac;\n"
                     if i < height - 2 and rows[i + 1][j] != '#':
+                        # Move up (without pushing a box)
                         smv_content += f"        Up_valid[{i + 1}][{j}] & next(shift_move) = \"u\" : "
                         smv_content += f"case board[{i}][{j}] = \"goal\" : \"wk_on_goal\"; TRUE : \"wk\"; esac;\n"
                         if i < height - 3 and rows[i + 2][j] != '#':
@@ -150,7 +158,12 @@ def convert_xsb_to_smv(xsb_content):
                         # Move right (without pushing a box)
                         smv_content += f"        Right_valid[{i}][{j}] & next(shift_move) = \"r\" : "
                         smv_content += f"case board[{i}][{j}] = \"wk_on_goal\" : \"goal\"; TRUE : \"floor\"; esac;\n"
+                        if rows[i][j + 2] != '#':
+                            # Push right (with a box)
+                            smv_content += f"        Right_push_valid[{i}][{j}] & next(shift_push) = \"R\": "
+                            smv_content += f"case board[{i}][{j}] = \"wk_on_goal\" : \"goal\"; TRUE : \"floor\"; esac;\n"
                     if j > 1 and rows[i][j - 1] != '#':
+                        # Move right (without pushing a box)
                         smv_content += f"        Right_valid[{i}][{j - 1}] & next(shift_move) = \"r\" : "
                         smv_content += f"case board[{i}][{j}] = \"goal\" : \"wk_on_goal\"; TRUE : \"wk\"; esac;\n"
                         if j > 2 and rows[i][j - 2] != '#':
@@ -163,7 +176,12 @@ def convert_xsb_to_smv(xsb_content):
                         if rows[i + 1][j] != '#':
                             smv_content += f"        Down_valid[{i}][{j}] & next(shift_move) = \"d\" : "
                             smv_content += f"case board[{i}][{j}] = \"wk_on_goal\" : \"goal\"; TRUE : \"floor\"; esac;\n"
+                            if rows[i + 2][j] != '#':
+                                # Push down (with a box)
+                                smv_content += f"        Down_push_valid[{i}][{j}]  & next(shift_push) = \"D\": "
+                                smv_content += f"case board[{i}][{j}] = \"wk_on_goal\" : \"goal\"; TRUE : \"floor\"; esac;\n"
                         if i > 1 and rows[i - 1][j] != '#':
+                            # Move down (without pushing a box)
                             smv_content += f"        Down_valid[{i - 1}][{j}] & next(shift_move) = \"d\" : "
                             smv_content += f"case board[{i}][{j}] = \"goal\" : \"wk_on_goal\";  TRUE : \"wk\"; esac;\n"
                             # Push down (with a box)
